@@ -103,8 +103,8 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   #Variable declaration
   stridefilterw = 1
   stridefilterh = 1
-  height = time
-  width = 30
+  height = 1
+  width = 1
   count_f = 16
   size_ph = 2
   size_pw = 2
