@@ -105,7 +105,7 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   stridefilterh = 1
   height = time
   width = 30
-  count_f = 64
+  count_f = 16
   size_ph = 2
   size_pw = 2
   label = model_settings['label_count']
@@ -126,13 +126,7 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   
   
   print(rectified) 
-  if is_training:
-  	dropout = tf.nn.dropout(rectified, dropoutp)
-	print(dropout)
-  else:
-	dropout = rectified
-	print(dropout)
-  pool1 = tf.nn.max_pool(dropout, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+  pool1 = tf.nn.max_pool(rectified, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
 
   
   
@@ -166,17 +160,14 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   convolution_2 = tf.nn.conv2d(pool1, weights2, [1, 1, 1, 1],'VALID') + bias2
   
   rectified2 = tf.nn.relu(convolution_2)
-  if is_training:
- 	dropout2 = tf.nn.dropout(rectified2, dropoutp)
-  else:
-	dropout2 = rectified2
+
   #the size of feature maps in frequency
   #out_convolution1_width = math.floor((frequency - width + stridefilterw)/ stridefilterw)
   #the size of feature maps in time
   #out_convolution_height = math.floor((time - height + stridefilterh)/ stridefilterh)
 
   #number of feature maps
-  pool2 = tf.nn.max_pool(dropout2,[1, 4, 4, 1], [1, 2, 2, 1],'SAME')
+  pool2 = tf.nn.max_pool(rectified2,[1, 4, 4, 1], [1, 2, 2, 1],'SAME')
   numberfeaturemaps = int(pool2.shape[1]) * int(pool2.shape[2]) * int(count_f) 
   print(numberfeaturemaps)
   convolutional_flat = tf.reshape(pool2,
