@@ -5,6 +5,7 @@ from __future__ import print_function
 import math
 
 import tensorflow as tf
+import numpy as np
 
 
 #trauncated_normal untuk declare parameter
@@ -103,9 +104,9 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   #Variable declaration
   stridefilterw = 1
   stridefilterh = 1
-  height = 1
-  width = 1
-  count_f = 16
+  height = time
+  width = 30
+  count_f = 64
   size_ph = 2
   size_pw = 2
   label = model_settings['label_count']
@@ -126,8 +127,21 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   
   
   print(rectified) 
-  pool1 = tf.nn.max_pool(rectified, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+  if is_training:
+  	dropout = tf.nn.dropout(rectified, dropoutp)
+	print(dropout)
+  else:
+	dropout = rectified
+	print(dropout)
+  pool1 = tf.nn.max_pool(dropout, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+  
 
+  grey = np.mean(fingerprint,-1)
+  test = tf.Session()
+  test.run(tf.global_variables_initializer())
+  imagefilter = test.run(convolution_1, feed_dict={fingerprint: grey.reshape(1, time, frequency, 1)})
+
+  tf.reset_default_graph()
   
   
 
@@ -160,14 +174,17 @@ def firsty_model(fingerprint_input, model_settings, is_training):
   convolution_2 = tf.nn.conv2d(pool1, weights2, [1, 1, 1, 1],'VALID') + bias2
   
   rectified2 = tf.nn.relu(convolution_2)
-
+  if is_training:
+ 	dropout2 = tf.nn.dropout(rectified2, dropoutp)
+  else:
+	dropout2 = rectified2
   #the size of feature maps in frequency
   #out_convolution1_width = math.floor((frequency - width + stridefilterw)/ stridefilterw)
   #the size of feature maps in time
   #out_convolution_height = math.floor((time - height + stridefilterh)/ stridefilterh)
 
   #number of feature maps
-  pool2 = tf.nn.max_pool(rectified2,[1, 4, 4, 1], [1, 2, 2, 1],'SAME')
+  pool2 = tf.nn.max_pool(dropout2,[1, 4, 4, 1], [1, 2, 2, 1],'SAME')
   numberfeaturemaps = int(pool2.shape[1]) * int(pool2.shape[2]) * int(count_f) 
   print(numberfeaturemaps)
   convolutional_flat = tf.reshape(pool2,
@@ -414,6 +431,5 @@ def thirdy_model(fingerprint_input, model_settings,is_training):
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
   confusion_matrix = tf.confusion_matrix(tf.argmax(ground_truth_input,1), tf.argmax(ground_truth_input, 1))
   """
-
 
 
